@@ -54,7 +54,12 @@ cp .env.example .env
 
 ### 4. MCP設定（オプション）
 
-MCPサーバーは`.mcp.json`で管理されています。
+MCPサーバーは`.mcp.json`で管理されています。必要に応じて以下を設定してください：
+
+```bash
+# .mcp.json.exampleをコピーして設定ファイルを作成
+cp .mcp.json.example .mcp.json
+```
 
 ### 5. アプリケーションの起動
 
@@ -101,42 +106,49 @@ npm start
 pytest
 ```
 
-## 設計書テンプレート
+## 使用方法
 
-`docs/design.md.sample`には、プロジェクトの要件定義から設計、開発工程までを体系的に記述するためのテンプレートが含まれています。このテンプレートは以下の特徴を持っています：
+### 基本的なチャット
+1. ブラウザでhttp://localhost:3000にアクセス
+2. チャット欄に質問やコマンドを入力
+3. Claude Code CLIがMCPサーバーと連携して回答を生成
 
-- 要件定義セクション（基本情報、プロジェクト概要、機能要件、非機能要件など）
-- システム設計セクション（アーキテクチャ、クラス設計、データフロー、エラーハンドリングなど）
-- 開発工程セクション（フェーズ、マイルストーン、リスク管理など）
+### MCP機能の活用例
+- **論文検索**: 「arxivで面白いLLM論文を探してください」
+- **Web検索**: 「最新のAI技術動向を調べて」
+- **コード解析**: 「このReactコンポーネントを改善して」
+- **ドキュメント参照**: 「Next.jsの最新機能について教えて」
 
-LLMはこのテンプレートを参照し、ユーザーから提供された要件に基づいて具体的な設計書を自動生成します。ユーザーは生成された設計書を確認し、必要に応じて調整を依頼できます。
+### トラブルシューティング
+- **500エラー**: サーバーログを確認し、Claude CLI認証を再実行
+- **タイムアウト**: 複雑な処理は最大180秒かかる場合があります
+- **MCP接続エラー**: `.mcp.json`の設定とAPIキーを確認
 
 ## プロジェクト構造
 
 ```
 .
-├── docs/               # ドキュメント
-│   ├── design.md       # プロジェクト設計書
-│   └── design.md.sample  # 設計書テンプレート
 ├── backend/            # バックエンド（Python/FastAPI）
-│   ├── __init__.py
-│   └── main.py         # FastAPIアプリケーション
+│   ├── main.py         # FastAPIアプリケーション
+│   └── claude_integration.py  # Claude Code CLI統合
 ├── frontend/           # フロントエンド（React）
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatInterface.js
-│   │   │   └── ChatInterface.css
-│   │   ├── App.js
-│   │   ├── App.css
-│   │   ├── index.js
-│   │   └── index.css
-│   └── package.json
-├── src/                # 既存のPythonソース
-├── tests/              # テストコード
+│   ├── public/         # 静的ファイル
+│   ├── src/            # Reactソースコード
+│   │   ├── components/ # コンポーネント
+│   │   ├── App.js      # メインアプリ
+│   │   └── index.js    # エントリーポイント
+│   └── package.json    # npm依存関係
+├── docs/               # ドキュメント
+│   └── design.md       # プロジェクト設計書
+├── papers/             # arxiv論文保存先
+├── .devcontainer/      # VS Code開発コンテナ設定
+├── .github/workflows/  # GitHub Actions CI/CD
+├── .mcp.json.example   # MCP設定テンプレート
+├── .mcp.json          # MCP設定ファイル（gitignore）
 ├── .env.example        # 環境変数テンプレート
+├── pyproject.toml      # uv依存関係定義
 ├── run_backend.py      # バックエンド起動スクリプト
-├── requirements.txt    # Python依存関係
+├── CLAUDE.md          # Claude Code設定ガイド
 └── README.md          # このファイル
 ```
 
