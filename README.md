@@ -54,24 +54,14 @@ cp .env.example .env
 
 ### 4. MCP設定（オプション）
 
-MCPサーバーは`.mcp.json`で管理されています。必要に応じて以下を設定してください：
-
-```bash
-# MCPサーバー用の環境変数を設定（必要な場合）
-export BRAVE_API_KEY="your-brave-api-key"
-export GITHUB_PERSONAL_ACCESS_TOKEN="your-github-token"
-export GEMINI_API_KEY="your-gemini-api-key"
-```
+MCPサーバーは`.mcp.json`で管理されています。
 
 ### 5. アプリケーションの起動
 
 #### バックエンドの起動
 ```bash
 # uvを使用して起動
-uv run backend/main.py
-
-# または従来の方法
-python run_backend.py
+uv run run_backend.py
 ```
 
 #### フロントエンドの起動
@@ -99,14 +89,11 @@ npm start
 - ✅ コードハイライト
 - ✅ Claude Code CLI統合（認証対応、セッション管理）
 - ✅ MCP対応（`.mcp.json`を通じてClaude Code CLIのMCPサーバーを利用）
-- ❌ 認証機能（未実装）
 
 ## 次の開発ステップ
 
-1. **認証・セキュリティ機能** - ユーザー認証とアクセス制御
-2. **ファイルアップロード機能** - コード解析とプロジェクト管理
-3. **ラズパイ用Docker設定** - コンテナ化デプロイ
-4. **リモートアクセス設定** - Nginx、SSL設定
+1. **音声認識機能** - ブラウザ音声入力とリアルタイム音声認識
+2. **リモートアクセス設定** - Tailscaleによるセキュアなリモートアクセス
 
 ## テスト
 

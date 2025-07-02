@@ -28,24 +28,20 @@ Claude Code CLIを活用したブラウザベースのLLMアシスタントbot�
   - コマンド実行
   - レスポンス取得・表示
   - エラーハンドリング
-- **ファイル管理**
-  - ファイルアップロード
-  - ファイル表示・編集
-  - プロジェクト管理
+- **音声認識機能**（今後実装予定）
+  - ブラウザ音声入力
+  - リアルタイム音声認識
+  - 音声コマンド処理
 
 #### 1.3.2 高度な機能
-- **MCP（Model Context Protocol）対応**
-  - MCP接続管理
-  - プロトコル設定
-  - 外部サービス連携
-- **設定管理**
-  - APIキー管理
-  - 接続設定
-  - ユーザー設定
-- **リモートアクセス**
-  - 認証・認可
+- **MCP（Model Context Protocol）対応**（実装済み）
+  - `.mcp.json`による設定管理
+  - Claude Code CLI経由でのMCP利用
+  - 外部サービス連携（arxiv、Google検索、GitHub等）
+- **リモートアクセス**（今後実装予定）
+  - Tailscaleによるセキュアアクセス
   - セッション管理
-  - セキュリティ設定
+  - 設定ファイル管理
 
 ### 1.4 非機能要件
 
@@ -56,18 +52,17 @@ Claude Code CLIを活用したブラウザベースのLLMアシスタントbot�
 - ストレージ: 4GB以下
 
 #### 1.4.2 セキュリティ要件
-- APIキーの暗号化保存
-- HTTPS通信の強制
-- セッションタイムアウト設定
-- 認証機能（トークンベース）
+- APIキーの環境変数管理
+- Tailscaleによるセキュアアクセス
 - CORS設定
+- 適切な権限管理
 
 #### 1.4.3 運用・保守要件
 - ログ記録機能
 - エラー監視
 - 設定ファイルによる管理
-- Docker化によるポータビリティ
-- 自動起動設定
+- uv による依存関係管理
+- systemd による自動起動（ラズパイ）
 
 ### 1.5 制約条件
 - **技術的制約**
@@ -83,19 +78,18 @@ Claude Code CLIを活用したブラウザベースのLLMアシスタントbot�
 
 ### 1.6 開発環境
 - 言語：Python 3.11+
-- フレームワーク：FastAPI、React/Vue.js
+- フレームワーク：FastAPI、React
 - 外部API：Claude Code CLI、MCP
 - 開発ツール：VSCode
 - パッケージ管理：uv
-- コンテナ：Docker、Docker Compose
+- ネットワーク：Tailscale
 
 ### 1.7 成果物
 - ソースコード
 - 設計書
-- テストコード
 - README（セットアップ手順含む）
-- Docker設定ファイル
-- デプロイ手順書
+- MCP設定ファイル（.mcp.json.example）
+- Tailscale設定手順書
 
 ## 2. システム設計
 
@@ -103,44 +97,41 @@ Claude Code CLIを活用したブラウザベースのLLMアシスタントbot�
 
 #### 2.1.1 システムアーキテクチャ
 ```
-[Browser] <---> [Nginx] <---> [React/Vue.js Frontend]
+[Browser] <---> [Tailscale] <---> [React Frontend]
                                         |
                                         | REST API / WebSocket
                                         |
                                         v
                                 [FastAPI Backend]
                                         |
+                                        v
+                                [Claude Code CLI]
                                         |
                         +---------------+---------------+
                         |                               |
                         v                               v
-                [Claude Code CLI]                   [MCP Client]
-                        |                               |
-                        v                               v
-                [Claude API]                    [External Services]
+                [Claude API]                    [MCP Servers]
+                                        (arxiv, Google Search, etc.)
 ```
 
 #### 2.1.2 主要コンポーネント
 1. **Webフロントエンド**
-   - React/Vue.js ベースのSPA
-   - チャットUI、設定画面
+   - React ベースのSPA
+   - チャットUI
    - WebSocketによるリアルタイム通信
+   - 音声認識機能（今後実装）
 2. **APIバックエンド**
    - FastAPI ベース
-   - Claude Code CLI ラッパー
-   - MCP クライアント機能
+   - Claude Code CLI 統合
+   - セッション管理
 3. **Claude Code CLI統合**
-   - コマンド実行エンジン
-   - レスポンス処理
+   - ストリーミングJSON入力対応
+   - MCP設定ファイル読み込み
    - エラーハンドリング
 4. **MCP統合**
-   - プロトコル実装
-   - 外部サービス連携
-   - 設定管理
-5. **認証・セキュリティ**
-   - JWT認証
-   - API キー管理
-   - セッション管理
+   - `.mcp.json`による設定管理
+   - 外部サービス連携（Claude CLI経由）
+   - 権限管理
 
 #### 2.1.3 設定・パラメータ
 - **サーバー設定**

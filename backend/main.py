@@ -2,11 +2,10 @@
 FastAPI backend for LLM Assistant Bot
 """
 
-import asyncio
 import json
 import logging
 from contextlib import asynccontextmanager
-from typing import Dict, Optional
+from typing import Dict
 
 from claude_integration import AdvancedClaudeCodeManager
 from dotenv import load_dotenv

@@ -126,6 +126,5 @@ export GEMINI_API_KEY="your-gemini-api-key"
 ```
 
 ## 今後の実装予定
-- 認証・セキュリティ機能
-- ファイルアップロード機能
-- ラズパイ用Docker設定
+- 音声認識機能
+- Tailscaleによるリモートアクセス設定
