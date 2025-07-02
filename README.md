@@ -22,10 +22,7 @@ git clone <repository-url>
 cd llm-assistant
 
 # Python仮想環境の作成（uvを使用）
-uv venv
-
-# 依存関係のインストール
-uv pip install -r requirements.txt
+uv sync
 
 # フロントエンドの依存関係をインストール
 cd frontend
