@@ -1,0 +1,69 @@
+{
+  "mcpServers": {
+    "gemini-google-search": {
+      "command": "npx",
+      "args": [
+        "mcp-gemini-google-search"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "your_gemini_api_key_here",
+        "GEMINI_MODEL": "gemini-2.5-flash"
+      }
+    },
+    "arxiv-mcp-server": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "arxiv-mcp-server",
+        "--storage-path",
+        "/path/to/your/project/papers"
+      ],
+      "env": {}
+    },
+    "markitdown": {
+      "command": "uvx",
+      "args": [
+        "markitdown-mcp"
+      ]
+    },
+    "voicevox": {
+      "command": "npx",
+      "args": [
+        "@t09tanaka/mcp-simple-voicevox"
+      ]
+    },
+    "youtube": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anaisbetts/mcp-youtube"
+      ]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "env": {}
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "env": {}
+    },
+    "aivisspeech": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@tegnike/mcp-simple-aivisspeech"
+      ],
+      "env": {}
+    }
+  }
+}

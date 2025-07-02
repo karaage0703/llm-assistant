@@ -6,13 +6,12 @@ import asyncio
 import json
 import logging
 from contextlib import asynccontextmanager
-from typing import Any, Dict
+from typing import Dict, Optional
 
 from claude_integration import AdvancedClaudeCodeManager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from mcp_manager import MCPManager
 from pydantic import BaseModel
 
 # Load environment variables
@@ -24,18 +23,15 @@ logger = logging.getLogger(__name__)
 
 # Initialize managers
 claude_manager = AdvancedClaudeCodeManager()
-mcp_manager = MCPManager()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("Initializing MCP servers...")
-    asyncio.create_task(mcp_manager.connect_all_enabled())
+    logger.info("Starting LLM Assistant Bot...")
     yield
     # Shutdown
-    logger.info("Shutting down, cleaning up MCP connections...")
-    await mcp_manager.disconnect_all()
+    logger.info("Shutting down...")
     claude_manager.cleanup_all_sessions()
 
 
@@ -55,24 +51,6 @@ app.add_middleware(
 class ChatMessage(BaseModel):
     message: str
     session_id: str = "default"
-
-
-class ClaudeResponse(BaseModel):
-    response: str
-    session_id: str
-    success: bool
-    error: str = None
-
-
-class MCPToolRequest(BaseModel):
-    server_name: str
-    tool_name: str
-    arguments: Dict[str, Any] = {}
-
-
-class MCPResourceRequest(BaseModel):
-    server_name: str
-    uri: str
 
 
 # WebSocket connection manager
@@ -139,72 +117,18 @@ async def delete_session(session_id: str):
     return {"message": f"Session {session_id} deleted successfully"}
 
 
-# ===== MCP API Endpoints =====
-
-
-@app.get("/api/mcp/servers")
-async def list_mcp_servers():
-    """List all MCP servers and their status"""
-    return {"servers": mcp_manager.list_servers()}
-
-
-@app.post("/api/mcp/servers/{server_name}/connect")
-async def connect_mcp_server(server_name: str):
-    """Connect to an MCP server"""
-    success = await mcp_manager.connect_server(server_name)
-    if success:
-        return {"message": f"Connected to {server_name}", "success": True}
-    else:
-        raise HTTPException(status_code=400, detail=f"Failed to connect to {server_name}")
-
-
-@app.post("/api/mcp/servers/{server_name}/disconnect")
-async def disconnect_mcp_server(server_name: str):
-    """Disconnect from an MCP server"""
-    success = await mcp_manager.disconnect_server(server_name)
-    if success:
-        return {"message": f"Disconnected from {server_name}", "success": True}
-    else:
-        raise HTTPException(status_code=400, detail=f"Failed to disconnect from {server_name}")
-
-
-@app.get("/api/mcp/tools")
-async def list_mcp_tools(server_name: str = None):
-    """List available MCP tools"""
-    tools = mcp_manager.list_tools(server_name)
-    return {"tools": [tool.model_dump() for tool in tools]}
-
-
-@app.get("/api/mcp/resources")
-async def list_mcp_resources(server_name: str = None):
-    """List available MCP resources"""
-    resources = mcp_manager.list_resources(server_name)
-    return {"resources": [resource.model_dump() for resource in resources]}
-
-
-@app.post("/api/mcp/tools/execute")
-async def execute_mcp_tool(request: MCPToolRequest):
-    """Execute an MCP tool"""
-    result = await mcp_manager.execute_tool(request.server_name, request.tool_name, request.arguments)
-    return result
-
-
-@app.post("/api/mcp/resources/get")
-async def get_mcp_resource(request: MCPResourceRequest):
-    """Get an MCP resource"""
-    result = await mcp_manager.get_resource(request.server_name, request.uri)
-    return result
-
-
-@app.post("/api/chat", response_model=ClaudeResponse)
+@app.post("/api/chat")
 async def chat_endpoint(message: ChatMessage):
     """Process chat message through Claude Code CLI"""
     try:
         result = await claude_manager.execute_command(message.message, message.session_id)
 
-        return ClaudeResponse(
-            response=result["response"], session_id=message.session_id, success=result["success"], error=result["error"]
-        )
+        return {
+            "response": result["response"],
+            "session_id": result.get("session_id", message.session_id),
+            "success": result["success"],
+            "error": result.get("error"),
+        }
 
     except Exception as e:
         logger.error(f"Chat endpoint error: {str(e)}")

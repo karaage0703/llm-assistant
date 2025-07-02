@@ -3,6 +3,7 @@ Enhanced Claude Code CLI integration with better session management
 """
 
 import asyncio
+import json
 import logging
 import os
 import shutil
@@ -134,35 +135,54 @@ class AdvancedClaudeCodeManager:
             return self._create_error_response(str(e))
 
     async def _execute_real_claude_cli(self, message: str, session: ChatSession) -> Dict[str, Any]:
-        """Execute real Claude Code CLI command"""
+        """Execute real Claude Code CLI command using streaming JSON input"""
         try:
-            # Prepare command - Claude CLI expects the message as arguments
-            cmd = self.claude_command + [message]
+            # Claude CLI with streaming JSON input mode, skip permissions, and MCP config
+            mcp_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".mcp.json")
+            cmd = self.claude_command + [
+                "-p",
+                "--output-format",
+                "stream-json",
+                "--verbose",
+                "--dangerously-skip-permissions",
+                "--mcp-config",
+                mcp_config_path,
+            ]
 
             # Setup environment (no API key needed for authenticated session)
             env = os.environ.copy()
 
             # Execute with timeout
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=session.working_dir, env=env
+                *cmd,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=session.working_dir,
+                env=env,
             )
 
             try:
+                # Format message as JSONL (JSON Lines)
+                jsonl_message = json.dumps({"content": message, "type": "user"}) + "\n"
+
+                # Send the JSONL message to Claude CLI and close stdin
                 stdout, stderr = await asyncio.wait_for(
-                    process.communicate(),
-                    timeout=60.0,  # Increased timeout for complex operations
+                    process.communicate(input=jsonl_message.encode("utf-8")),
+                    timeout=180.0,  # Increased timeout for complex operations like arxiv search
                 )
             except asyncio.TimeoutError:
                 process.kill()
                 await process.wait()
-                return self._create_error_response("Command timed out after 60 seconds")
+                return self._create_error_response("Command timed out after 120 seconds")
 
             # Process results
             stdout_text = stdout.decode("utf-8", errors="replace").strip()
             stderr_text = stderr.decode("utf-8", errors="replace").strip()
 
             if process.returncode == 0:
-                response = stdout_text or "Command executed successfully"
+                # Parse streaming JSON output if available
+                response = self._parse_streaming_json_output(stdout_text) or stdout_text or "Command executed successfully"
                 return {"success": True, "response": response, "error": None, "session_id": session.session_id}
             else:
                 error_msg = stderr_text or f"Command failed with exit code {process.returncode}"
@@ -171,6 +191,41 @@ class AdvancedClaudeCodeManager:
         except Exception as e:
             logger.error(f"Error executing real Claude CLI: {e}")
             return self._create_error_response(str(e))
+
+    def _parse_streaming_json_output(self, output: str) -> str:
+        """Parse streaming JSON output from Claude CLI"""
+        try:
+            # Claude CLI streaming output consists of multiple JSON events
+            lines = output.strip().split("\n")
+            response_text = ""
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+
+                try:
+                    event = json.loads(line)
+                    # Look for assistant message result
+                    if event.get("type") == "result":
+                        result = event.get("result", "")
+                        if result:
+                            return result
+                    # Also check for assistant messages
+                    elif event.get("type") == "assistant":
+                        message = event.get("message", {})
+                        content = message.get("content", [])
+                        for item in content:
+                            if item.get("type") == "text":
+                                response_text += item.get("text", "")
+                except json.JSONDecodeError:
+                    continue
+
+            return response_text.strip() if response_text else None
+
+        except Exception as e:
+            logger.warning(f"Failed to parse streaming JSON output: {e}")
+            return None
 
     async def _execute_simulation_mode(self, message: str, session: ChatSession) -> Dict[str, Any]:
         """Execute in simulation mode when Claude CLI is not available"""
