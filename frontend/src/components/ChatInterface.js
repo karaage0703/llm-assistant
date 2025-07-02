@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import './ChatInterface.css';
+import VoiceRecognition from './VoiceRecognition';
 
 // Configure marked for code highlighting
 marked.setOptions({
@@ -144,6 +145,20 @@ const ChatInterface = () => {
     sendMessage(inputMessage);
   };
 
+  // Voice recognition handlers
+  const handleVoiceTranscript = (transcript) => {
+    // Add transcript to current input
+    setInputMessage(prevMessage => {
+      const newMessage = prevMessage + (prevMessage ? ' ' : '') + transcript.trim();
+      return newMessage;
+    });
+  };
+
+  const handleVoiceError = (error) => {
+    console.error('Voice recognition error:', error);
+    // Optionally show error to user
+  };
+
   const renderMessage = (message) => {
     const htmlContent = marked(message.content);
     
@@ -213,12 +228,18 @@ const ChatInterface = () => {
       </div>
 
       <form className="input-form" onSubmit={handleSubmit}>
+        {/* Voice Recognition Component */}
+        <VoiceRecognition 
+          onTranscript={handleVoiceTranscript}
+          onError={handleVoiceError}
+        />
+        
         <div className="input-container">
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Type your message here..."
+            placeholder="Type your message here or use voice input..."
             disabled={isLoading}
             className="message-input"
           />
