@@ -243,3 +243,4 @@ logs/
 *.seed
 *.pid.lock
 .claude/settings.local.json
+.mcp.json
