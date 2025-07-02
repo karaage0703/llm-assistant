@@ -6,9 +6,11 @@ Claude Code CLIを活用したブラウザベースのLLMアシスタントbot�
 
 - **チャットインターフェース**: ブラウザベースのリアルタイムチャット
 - **Claude Code CLI統合**: Claude Code CLIの機能をWebインターフェースで提供
+- **MCP (Model Context Protocol) サポート**: `.mcp.json`経由でMCPサーバーと連携
 - **WebSocket通信**: リアルタイムメッセージング
 - **マークダウン対応**: メッセージのマークダウンレンダリング
 - **コードハイライト**: シンタックスハイライト機能
+- **セッション管理**: 複数の独立したClaude Code CLIセッション
 - **ラズパイ対応**: ラズベリーパイでの軽量動作
 - **リモートアクセス**: ネットワーク越しでのアクセス可能
 
@@ -22,10 +24,7 @@ git clone <repository-url>
 cd llm-assistant
 
 # Python仮想環境の作成（uvを使用）
-uv venv
-
-# 依存関係のインストール
-uv pip install -r requirements.txt
+uv sync
 
 # フロントエンドの依存関係をインストール
 cd frontend
@@ -53,16 +52,16 @@ cp .env.example .env
 # 基本的にはデフォルト設定で動作します
 ```
 
-### 4. アプリケーションの起動
+### 4. MCP設定（オプション）
+
+MCPサーバーは`.mcp.json`で管理されています。
+
+### 5. アプリケーションの起動
 
 #### バックエンドの起動
 ```bash
-# 仮想環境をアクティベート
-source .venv/bin/activate  # Linux/Mac
-# または .venv\Scripts\activate  # Windows
-
-# バックエンドサーバー起動
-python run_backend.py
+# uvを使用して起動
+uv run run_backend.py
 ```
 
 #### フロントエンドの起動
@@ -72,7 +71,7 @@ cd frontend
 npm start
 ```
 
-### 5. アクセス
+### 6. アクセス
 
 - フロントエンド: http://localhost:3000
 - バックエンドAPI: http://localhost:8000
@@ -89,16 +88,12 @@ npm start
 - ✅ マークダウンレンダリング
 - ✅ コードハイライト
 - ✅ Claude Code CLI統合（認証対応、セッション管理）
-- ❌ MCP対応（未実装）
-- ❌ 認証機能（未実装）
+- ✅ MCP対応（`.mcp.json`を通じてClaude Code CLIのMCPサーバーを利用）
 
 ## 次の開発ステップ
 
-1. **MCP（Model Context Protocol）対応** - 外部サービス連携
-2. **認証・セキュリティ機能** - ユーザー認証とアクセス制御
-3. **ファイルアップロード機能** - コード解析とプロジェクト管理
-4. **ラズパイ用Docker設定** - コンテナ化デプロイ
-5. **リモートアクセス設定** - Nginx、SSL設定
+1. **音声認識機能** - ブラウザ音声入力とリアルタイム音声認識
+2. **リモートアクセス設定** - Tailscaleによるセキュアなリモートアクセス
 
 ## テスト
 

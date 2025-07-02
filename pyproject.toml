@@ -1,3 +1,25 @@
+[project]
+name = "llm-assistant"
+version = "0.1.0"
+description = "Browser-based LLM Assistant Bot using Claude Code CLI"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.24.0",
+    "websockets>=12.0",
+    "pydantic>=2.7.2",
+    "python-multipart>=0.0.9",
+    "aiofiles>=23.2.1",
+    "python-dotenv>=1.0.0",
+    "mcp[cli]>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff==0.9.1",
+]
+
 [tool.ruff]
 # GitHub Actions workflow (.github/workflows/ruff.yml) と同じ設定
 line-length = 127

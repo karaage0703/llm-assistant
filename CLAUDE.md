@@ -108,8 +108,23 @@ FRONTEND_URL=http://localhost:3000
 LOG_LEVEL=INFO
 ```
 
+## MCP（Model Context Protocol）対応
+このプロジェクトは`.mcp.json`を通じてClaude Code CLIのMCP機能を利用します。MCPサーバーの設定は`.mcp.json`で管理され、以下のサーバーが利用可能です：
+- gemini-google-search: Google検索
+- arxiv-mcp-server: 論文検索・ダウンロード
+- markitdown: マークダウン変換
+- voicevox/aivisspeech: 音声合成
+- youtube: YouTube字幕取得
+- playwright: ブラウザ自動化
+- context7: ライブラリドキュメント検索
+
+MCPサーバー用の環境変数：
+```bash
+export BRAVE_API_KEY="your-brave-api-key"
+export GITHUB_PERSONAL_ACCESS_TOKEN="your-github-token"
+export GEMINI_API_KEY="your-gemini-api-key"
+```
+
 ## 今後の実装予定
-- MCP（Model Context Protocol）対応
-- 認証・セキュリティ機能
-- ファイルアップロード機能
-- ラズパイ用Docker設定
+- 音声認識機能
+- Tailscaleによるリモートアクセス設定

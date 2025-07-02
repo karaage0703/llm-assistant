@@ -4,6 +4,7 @@ FastAPI backend for LLM Assistant Bot
 
 import json
 import logging
+from contextlib import asynccontextmanager
 from typing import Dict
 
 from claude_integration import AdvancedClaudeCodeManager
@@ -19,7 +20,21 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="LLM Assistant Bot", version="0.1.0")
+# Initialize managers
+claude_manager = AdvancedClaudeCodeManager()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger.info("Starting LLM Assistant Bot...")
+    yield
+    # Shutdown
+    logger.info("Shutting down...")
+    claude_manager.cleanup_all_sessions()
+
+
+app = FastAPI(title="LLM Assistant Bot", version="0.1.0", lifespan=lifespan)
 
 # CORS middleware
 app.add_middleware(
@@ -35,13 +50,6 @@ app.add_middleware(
 class ChatMessage(BaseModel):
     message: str
     session_id: str = "default"
-
-
-class ClaudeResponse(BaseModel):
-    response: str
-    session_id: str
-    success: bool
-    error: str = None
 
 
 # WebSocket connection manager
@@ -69,9 +77,6 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
-
-# Initialize the Claude Code manager
-claude_manager = AdvancedClaudeCodeManager()
 
 
 # Routes
@@ -111,15 +116,18 @@ async def delete_session(session_id: str):
     return {"message": f"Session {session_id} deleted successfully"}
 
 
-@app.post("/api/chat", response_model=ClaudeResponse)
+@app.post("/api/chat")
 async def chat_endpoint(message: ChatMessage):
     """Process chat message through Claude Code CLI"""
     try:
         result = await claude_manager.execute_command(message.message, message.session_id)
 
-        return ClaudeResponse(
-            response=result["response"], session_id=message.session_id, success=result["success"], error=result["error"]
-        )
+        return {
+            "response": result["response"],
+            "session_id": result.get("session_id", message.session_id),
+            "success": result["success"],
+            "error": result.get("error"),
+        }
 
     except Exception as e:
         logger.error(f"Chat endpoint error: {str(e)}")
