@@ -1,0 +1,11 @@
+[tool.ruff]
+# GitHub Actions workflow (.github/workflows/ruff.yml) と同じ設定
+line-length = 127
+
+[tool.ruff.lint]
+# 基本的なLintルール
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.format]
+# フォーマット設定
+line-ending = "auto"

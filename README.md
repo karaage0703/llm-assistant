@@ -1,74 +1,106 @@
-# Python-Boilerplate-LLM
+# LLM Assistant Bot
 
-このリポジトリはAIコーディングツール（Cline/Cursor等）を活用したPythonプロジェクト開発のためのボイラープレートです。LLMが設計書を自動生成し、それに基づいて実装を行うワークフローを前提としています。
+Claude Code CLIを活用したブラウザベースのLLMアシスタントbotです。ラズベリーパイ上で動作し、リモートからアクセス可能なWebアプリケーションとして設計されています。
 
 ## 機能
 
-- LLMによる設計書自動生成と実装の一貫したワークフロー
-- 設計書テンプレート（docs/design.md.sample）をベースにLLMが要件に合わせた設計書を作成
-- uvを使用した仮想環境管理
-- src/とtests/ディレクトリによる構造化
-- メインプログラムのエントリーポイント
-- pytestを使用したテスト例
+- **チャットインターフェース**: ブラウザベースのリアルタイムチャット
+- **Claude Code CLI統合**: Claude Code CLIの機能をWebインターフェースで提供
+- **WebSocket通信**: リアルタイムメッセージング
+- **マークダウン対応**: メッセージのマークダウンレンダリング
+- **コードハイライト**: シンタックスハイライト機能
+- **ラズパイ対応**: ラズベリーパイでの軽量動作
+- **リモートアクセス**: ネットワーク越しでのアクセス可能
 
-## 使い方
+## セットアップ
 
-### 開発環境のセットアップ
-
-#### 方法1: DevContainer（推奨）
-
-VS Codeユーザーの場合、DevContainerを使用した開発環境が利用可能です：
-
-1. VS CodeでDevContainerを開く:
-   - `F1` → `Dev Containers: Reopen in Container`
-   - または通知からコンテナで再開を選択
-
-2. 自動的にDocker環境がセットアップされ、Pythonの開発環境が構築されます
-
-#### 方法2: ローカル環境
-
-1. uvによる仮想環境の作成とパッケージのインストール:
+### 1. 環境の準備
 
 ```bash
+# リポジトリをクローン
+git clone <repository-url>
+cd llm-assistant
+
+# Python仮想環境の作成（uvを使用）
 uv venv
-```
 
-2. 開発用パッケージのインストール:
-
-```bash
+# 依存関係のインストール
 uv pip install -r requirements.txt
+
+# フロントエンドの依存関係をインストール
+cd frontend
+npm install
+cd ..
 ```
 
-### メインプログラムの実行
+### 2. Claude Code CLI認証（必須）
 
 ```bash
-python -m src.main
+# Claude Code CLIをインストール
+npm install -g @anthropic-ai/claude-code
+
+# 認証（Claude Pro/Max契約またはAnthropic Consoleアカウントが必要）
+claude auth
 ```
 
-### LLMを活用した開発ワークフロー
+### 3. 環境変数の設定（オプション）
 
-このボイラープレートは、LLM（Cline/Cursor等）を活用した以下の開発ワークフローを前提としています：
+```bash
+# .envファイルを作成
+cp .env.example .env
 
-1. プロジェクトの要件をLLMに伝える
-2. LLMが`docs/design.md.sample`テンプレートをベースに、要件に合わせた`docs/design.md`を自動生成
-3. 生成された設計書に基づいて、LLMがコードを実装
-4. テストコードの作成と実行
-
-このワークフローにより、要件定義から実装までの一貫性が保たれ、効率的な開発が可能になります。
-
-#### LLMへの指示例
-
+# 必要に応じて設定を編集
+# 基本的にはデフォルト設定で動作します
 ```
-このリポジトリを使って、以下の要件のプロジェクトを実装してください。
 
-<プロジェクトの要件>
+### 4. アプリケーションの起動
 
-docs/design.md.sample をベースに設計書を作成し、その設計に基づいて実装を行ってください。
+#### バックエンドの起動
+```bash
+# 仮想環境をアクティベート
+source .venv/bin/activate  # Linux/Mac
+# または .venv\Scripts\activate  # Windows
+
+# バックエンドサーバー起動
+python run_backend.py
 ```
+
+#### フロントエンドの起動
+```bash
+# 別のターミナルで
+cd frontend
+npm start
+```
+
+### 5. アクセス
+
+- フロントエンド: http://localhost:3000
+- バックエンドAPI: http://localhost:8000
+- API ドキュメント: http://localhost:8000/docs
+
+## 現在の状態
+
+現在は基本的な実装が完了しており、以下の機能が動作します：
+
+- ✅ FastAPIバックエンド（基本構造）
+- ✅ Reactフロントエンド（チャットUI）
+- ✅ WebSocket通信
+- ✅ REST API
+- ✅ マークダウンレンダリング
+- ✅ コードハイライト
+- ✅ Claude Code CLI統合（認証対応、セッション管理）
+- ❌ MCP対応（未実装）
+- ❌ 認証機能（未実装）
+
+## 次の開発ステップ
+
+1. **MCP（Model Context Protocol）対応** - 外部サービス連携
+2. **認証・セキュリティ機能** - ユーザー認証とアクセス制御
+3. **ファイルアップロード機能** - コード解析とプロジェクト管理
+4. **ラズパイ用Docker設定** - コンテナ化デプロイ
+5. **リモートアクセス設定** - Nginx、SSL設定
 
 ## テスト
-
-テストの実行:
 
 ```bash
 pytest
@@ -89,24 +121,28 @@ LLMはこのテンプレートを参照し、ユーザーから提供された�
 ```
 .
 ├── docs/               # ドキュメント
-│   └── design.md.sample  # 設計書テンプレート（LLMが参照）
-├── src/                # ソースコード
+│   ├── design.md       # プロジェクト設計書
+│   └── design.md.sample  # 設計書テンプレート
+├── backend/            # バックエンド（Python/FastAPI）
 │   ├── __init__.py
-│   └── main.py         # メインエントリーポイント
+│   └── main.py         # FastAPIアプリケーション
+├── frontend/           # フロントエンド（React）
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ChatInterface.js
+│   │   │   └── ChatInterface.css
+│   │   ├── App.js
+│   │   ├── App.css
+│   │   ├── index.js
+│   │   └── index.css
+│   └── package.json
+├── src/                # 既存のPythonソース
 ├── tests/              # テストコード
-│   ├── conftest.py
-│   └── test_main.py    # メインモジュールのテスト
-├── .devcontainer/      # DevContainer設定ファイル
-│   ├── devcontainer.json
-│   ├── docker-compose.yml
-│   └── Dockerfile
-├── .claude/            # Claude Code設定
-│   └── settings.local.json
-├── rules.md            # コーディングルール
-├── .gitignore          # Git無視ファイル設定
-├── LICENSE             # ライセンスファイル
-├── README.md           # このファイル
-└── requirements.txt    # 依存関係
+├── .env.example        # 環境変数テンプレート
+├── run_backend.py      # バックエンド起動スクリプト
+├── requirements.txt    # Python依存関係
+└── README.md          # このファイル
 ```
 
 ## ライセンス

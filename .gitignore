@@ -172,3 +172,73 @@ cython_debug/
 
 # For MacOS
 .DS_Store
+
+# ===== Project Specific =====
+
+# Node.js / React Frontend
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/package-lock.json
+frontend/.pnp
+frontend/.pnp.js
+
+# React Scripts
+frontend/.eslintcache
+
+# Claude Code CLI temporary directories
+claude_session_*/
+/tmp/claude_*
+
+# Runtime logs and temporary files
+*.log
+backend.log
+frontend.log
+nohup.out
+
+# Claude Assistant Bot specific
+.claude_sessions/
+working_dirs/
+
+# MCP (Model Context Protocol) temporary files
+mcp_*/
+.mcp_cache/
+
+# IDE and Editor files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Environment and config files (local overrides)
+.env.local
+.env.development
+.env.production
+config.local.json
+settings.local.json
+
+# Runtime data
+pids/
+logs/
+*.pid
+*.seed
+*.pid.lock
