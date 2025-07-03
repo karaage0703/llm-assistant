@@ -7,11 +7,12 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Dict
 
-from backend.claude_integration import AdvancedClaudeCodeManager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+from backend.claude_integration import AdvancedClaudeCodeManager
 
 # Load environment variables
 load_dotenv()
