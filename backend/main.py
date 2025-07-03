@@ -7,7 +7,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Dict
 
-from claude_integration import AdvancedClaudeCodeManager
+from backend.claude_integration import AdvancedClaudeCodeManager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware

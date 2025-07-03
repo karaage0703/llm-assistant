@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: llm-assistant-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - FRONTEND_URL=http://localhost
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./backend:/app/backend
+      - ./.mcp.json:/app/.mcp.json:ro
+      - claude-sessions:/app/temp
+      - ./papers:/app/papers
+      - ~/.claude:/home/appuser/.claude
+      - ~/.config:/home/appuser/.config
+    networks:
+      - llm-assistant-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: llm-assistant-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - llm-assistant-network
+    restart: unless-stopped
+
+networks:
+  llm-assistant-network:
+    driver: bridge
+
+volumes:
+  claude-sessions:
