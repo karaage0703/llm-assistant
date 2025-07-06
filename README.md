@@ -83,6 +83,48 @@ npm start
 - バックエンドAPI: http://localhost:8000
 - API ドキュメント: http://localhost:8000/docs
 
+## 外部ネットワークからのアクセス
+
+### Tailscaleを使用したリモートアクセス
+
+Tailscaleを使用することで、セキュアで簡単に外部ネットワークからアクセスできます。
+
+#### セットアップ手順
+
+1. **Tailscaleのインストール**
+   ```bash
+   # macOS
+   brew install --cask tailscale
+   
+   # または公式サイトからダウンロード
+   # https://tailscale.com/download
+   ```
+
+2. **Tailscaleの認証と設定**
+   - Tailscaleアプリを起動
+   - アカウントでログイン（Google、Microsoft、GitHubアカウント対応）
+   - デバイスを承認
+
+3. **外部デバイスからのアクセス**
+   - 接続したいデバイス（スマートフォン、タブレット、PC等）にもTailscaleをインストール
+   - 同じアカウントでログイン
+   - TailscaleのIPアドレス（通常`100.64.x.x`形式）でアクセス：
+     - フロントエンド: `http://100.64.x.x:3000`
+     - バックエンドAPI: `http://100.64.x.x:8000`
+
+#### 利点
+- **セキュア**: VPNレベルのセキュリティ
+- **簡単設定**: 複雑なネットワーク設定不要
+- **クロスプラットフォーム**: iOS、Android、Windows、Linux対応
+- **自動暗号化**: 通信の自動暗号化
+
+### その他のアクセス方法
+
+#### 同一ネットワーク内からのアクセス
+- PCのIPアドレスを確認: `ifconfig | grep inet`（macOS/Linux）
+- `http://[PCのIP]:3000`でアクセス（例: `http://192.168.1.100:3000`）
+
+
 ## 現在の状態
 
 現在は基本的な実装が完了しており、以下の機能が動作します：
@@ -96,11 +138,12 @@ npm start
 - ✅ Claude Code CLI統合（認証対応、セッション管理）
 - ✅ MCP対応（`.mcp.json`を通じてClaude Code CLIのMCPサーバーを利用）
 - ✅ 音声認識機能（Web Speech API使用、日本語対応）
+- ✅ Tailscaleリモートアクセス（外部ネットワークからの安全なアクセス）
 
 ## 次の開発ステップ
 
-1. **リモートアクセス設定** - Tailscaleによるセキュアなリモートアクセス
-2. **音声認識の改善** - 多言語対応、音声品質向上
+1. **音声認識の改善** - 多言語対応、音声品質向上
+2. **UIの改善** - レスポンシブデザイン、ダークモード対応
 
 ## テスト
 
@@ -146,9 +189,14 @@ pytest
 │   │   ├── App.js      # メインアプリ
 │   │   └── index.js    # エントリーポイント
 │   └── package.json    # npm依存関係
-├── docs/               # ドキュメント
+├── documents/          # ドキュメント管理ディレクトリ
+│   ├── README.md       # ドキュメント管理ガイド
+│   ├── notes/          # 日付ベースの一時的なメモ・記録
+│   ├── knowledge/      # カテゴリ別の継続的な知識・ノウハウ
+│   ├── materials/      # 資料・素材（マニュアル、テンプレート等）
+│   └── papers/         # 学術論文・研究資料（arXiv論文等）
+├── docs/               # プロジェクト設計ドキュメント
 │   └── design.md       # プロジェクト設計書
-├── papers/             # arxiv論文保存先
 ├── .devcontainer/      # VS Code開発コンテナ設定
 ├── .github/workflows/  # GitHub Actions CI/CD
 ├── .mcp.json.example   # MCP設定テンプレート
@@ -159,6 +207,37 @@ pytest
 ├── CLAUDE.md          # Claude Code設定ガイド
 └── README.md          # このファイル
 ```
+
+## ドキュメント管理（documents/）
+
+プロジェクトでは`documents/`ディレクトリで各種ドキュメントを体系的に管理しています。
+
+### ディレクトリ構成と用途
+
+- **📂 documents/notes/** - 日付ベースの一時的なメモ・記録
+  - 命名規則: `YYYYMMDD_title.md`
+  - 用途: 会議メモ、日々の作業記録、期限があるタスク
+
+- **📂 documents/knowledge/** - カテゴリ別の継続的な知識・ノウハウ
+  - 命名規則: `category_title.md`
+  - 用途: 技術Tips、プロジェクト情報、手順書
+
+- **📂 documents/materials/** - 様々な資料・素材
+  - 用途: マニュアル、テンプレート、画像、サンプルコード等
+  - 特徴: 外部から取得した資料や再利用可能な素材
+
+- **📂 documents/papers/** - 学術論文・研究資料
+  - 用途: arXivからダウンロードした論文等
+  - 形式: PDF、Markdown形式の要約
+
+### 使い分けの例
+
+- 今日の会議メモ → `documents/notes/20250106_meeting_projectX.md`
+- Pythonの技術Tips → `documents/knowledge/tech_python_tips.md`
+- 製品マニュアル → `documents/materials/manuals/product_manual.pdf`
+- 論文保存 → `documents/papers/[論文ID].pdf`
+
+詳細は[documents/README.md](documents/README.md)を参照してください。
 
 ## ライセンス
 
