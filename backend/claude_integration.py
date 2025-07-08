@@ -97,8 +97,8 @@ class AdvancedClaudeCodeManager:
         logger.info(f"Created session {session_id} with working dir {working_dir}")
         return session
 
-    async def execute_command(self, message: str, session_id: str = "default") -> Dict[str, Any]:
-        """Execute Claude Code CLI command in a specific session"""
+    async def execute_command(self, message: str, session_id: str = "default", stream_callback=None) -> Dict[str, Any]:
+        """Execute Claude Code CLI command in a specific session with optional streaming"""
         try:
             # Get or create session
             session = await self.create_session(session_id)
@@ -119,7 +119,7 @@ class AdvancedClaudeCodeManager:
 
             # Execute command
             if self.claude_cli_available:
-                result = await self._execute_real_claude_cli(message, session)
+                result = await self._execute_real_claude_cli_streaming(message, session, stream_callback)
             else:
                 result = await self._execute_simulation_mode(message, session)
 
@@ -226,6 +226,116 @@ class AdvancedClaudeCodeManager:
         except Exception as e:
             logger.warning(f"Failed to parse streaming JSON output: {e}")
             return None
+
+    async def _execute_real_claude_cli_streaming(
+        self, message: str, session: ChatSession, stream_callback=None
+    ) -> Dict[str, Any]:
+        """Execute real Claude Code CLI command with streaming support"""
+        try:
+            # Claude CLI with streaming JSON input mode, skip permissions, and MCP config
+            mcp_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".mcp.json")
+            cmd = self.claude_command + [
+                "-p",
+                "--output-format",
+                "stream-json",
+                "--verbose",
+                "--dangerously-skip-permissions",
+                "--mcp-config",
+                mcp_config_path,
+            ]
+
+            # Setup environment (no API key needed for authenticated session)
+            env = os.environ.copy()
+
+            # Execute with streaming
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=session.working_dir,
+                env=env,
+            )
+
+            # Format message as JSONL (JSON Lines)
+            jsonl_message = json.dumps({"content": message, "type": "user"}) + "\n"
+
+            # Send the JSONL message and read response streaming
+            process.stdin.write(jsonl_message.encode("utf-8"))
+            await process.stdin.drain()
+            process.stdin.close()
+
+            response_text = ""
+            full_response = ""
+
+            # Stream stdout
+            while True:
+                try:
+                    line = await asyncio.wait_for(process.stdout.readline(), timeout=1.0)
+                    if not line:
+                        break
+
+                    line_str = line.decode("utf-8", errors="replace").strip()
+                    if not line_str:
+                        continue
+
+                    try:
+                        event = json.loads(line_str)
+
+                        # Handle different event types
+                        if event.get("type") == "assistant":
+                            message_data = event.get("message", {})
+                            content = message_data.get("content", [])
+                            for item in content:
+                                if item.get("type") == "text":
+                                    text = item.get("text", "")
+                                    response_text += text
+                                    if stream_callback:
+                                        await stream_callback({"type": "text", "content": text, "accumulated": response_text})
+
+                        elif event.get("type") == "tool_use":
+                            # Stream tool usage information
+                            if stream_callback:
+                                await stream_callback(
+                                    {
+                                        "type": "tool_use",
+                                        "tool_name": event.get("name", ""),
+                                        "parameters": event.get("parameters", {}),
+                                    }
+                                )
+
+                        elif event.get("type") == "result":
+                            result = event.get("result", "")
+                            if result:
+                                full_response = result
+
+                    except json.JSONDecodeError:
+                        logger.debug(f"Could not parse JSON line: {line_str}")
+
+                except asyncio.TimeoutError:
+                    # Check if process is still running
+                    if process.returncode is not None:
+                        break
+                    continue
+
+            # Wait for process to complete
+            await process.wait()
+
+            # Get any remaining stderr
+            stderr = await process.stderr.read()
+            stderr_text = stderr.decode("utf-8", errors="replace").strip()
+
+            if process.returncode == 0:
+                # Use full_response if available, otherwise use accumulated response_text
+                final_response = full_response or response_text or "Command executed successfully"
+                return {"success": True, "response": final_response, "error": None, "session_id": session.session_id}
+            else:
+                error_msg = stderr_text or f"Command failed with exit code {process.returncode}"
+                return {"success": False, "response": response_text, "error": error_msg, "session_id": session.session_id}
+
+        except Exception as e:
+            logger.error(f"Error executing real Claude CLI with streaming: {e}")
+            return self._create_error_response(str(e))
 
     async def _execute_simulation_mode(self, message: str, session: ChatSession) -> Dict[str, Any]:
         """Execute in simulation mode when Claude CLI is not available"""

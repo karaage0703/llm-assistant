@@ -28,6 +28,7 @@ const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [websocket, setWebsocket] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [intermediateMessage, setIntermediateMessage] = useState('');
   const messagesEndRef = useRef(null);
   const clientId = useRef(Math.random().toString(36).substr(2, 9));
 
@@ -52,8 +53,23 @@ const ChatInterface = () => {
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        if (data.type === 'response') {
+        
+        if (data.type === 'stream') {
+          // Handle intermediate updates
+          const streamData = data.data;
+          
+          if (streamData.type === 'text') {
+            // Show intermediate text as status
+            setIntermediateMessage(`Processing: ${streamData.content?.substring(0, 100)}...`);
+          } else if (streamData.type === 'tool_use') {
+            // Show tool usage information
+            setIntermediateMessage(`Using tool: ${streamData.tool_name}`);
+          }
+          
+        } else if (data.type === 'response') {
+          // Final response received
           const responseData = data.data;
+          
           setMessages(prev => [...prev, {
             id: Date.now(),
             type: 'assistant',
@@ -62,7 +78,10 @@ const ChatInterface = () => {
             success: responseData.success,
             error: responseData.error
           }]);
+          
+          // Reset state
           setIsLoading(false);
+          setIntermediateMessage('');
         }
       };
 
@@ -102,6 +121,9 @@ const ChatInterface = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+    
+    // Reset intermediate message for new message
+    setIntermediateMessage('');
 
     // Send via WebSocket if connected, otherwise use REST API
     if (websocket && websocket.readyState === WebSocket.OPEN) {
@@ -215,11 +237,17 @@ const ChatInterface = () => {
               <span className="message-time">thinking...</span>
             </div>
             <div className="message-content">
-              <div className="loading-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+              {intermediateMessage ? (
+                <div className="intermediate-message">
+                  {intermediateMessage}
+                </div>
+              ) : (
+                <div className="loading-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              )}
             </div>
           </div>
         )}

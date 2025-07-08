@@ -174,6 +174,18 @@ pytest
 - 500エラー: サーバーログを確認し、Claude CLI認証を再実行
 - タイムアウト: 複雑な処理は最大180秒かかる場合があります
 - MCP接続エラー: `.mcp.json`の設定とAPIキーを確認
+- ポート使用中エラー: 
+  ```bash
+  # エラー: [Errno 48] Address already in use
+  # 使用中のプロセスを確認
+  lsof -i :8000
+  
+  # プロセスを停止（PIDを確認して実行）
+  kill [PID]
+  
+  # または全てのPythonプロセスを停止
+  pkill -f "python.*run_backend.py"
+  ```
 
 ## プロジェクト構造
 
@@ -207,37 +219,6 @@ pytest
 ├── CLAUDE.md          # Claude Code設定ガイド
 └── README.md          # このファイル
 ```
-
-## ドキュメント管理（documents/）
-
-プロジェクトでは`documents/`ディレクトリで各種ドキュメントを体系的に管理しています。
-
-### ディレクトリ構成と用途
-
-- **📂 documents/notes/** - 日付ベースの一時的なメモ・記録
-  - 命名規則: `YYYYMMDD_title.md`
-  - 用途: 会議メモ、日々の作業記録、期限があるタスク
-
-- **📂 documents/knowledge/** - カテゴリ別の継続的な知識・ノウハウ
-  - 命名規則: `category_title.md`
-  - 用途: 技術Tips、プロジェクト情報、手順書
-
-- **📂 documents/materials/** - 様々な資料・素材
-  - 用途: マニュアル、テンプレート、画像、サンプルコード等
-  - 特徴: 外部から取得した資料や再利用可能な素材
-
-- **📂 documents/papers/** - 学術論文・研究資料
-  - 用途: arXivからダウンロードした論文等
-  - 形式: PDF、Markdown形式の要約
-
-### 使い分けの例
-
-- 今日の会議メモ → `documents/notes/20250106_meeting_projectX.md`
-- Pythonの技術Tips → `documents/knowledge/tech_python_tips.md`
-- 製品マニュアル → `documents/materials/manuals/product_manual.pdf`
-- 論文保存 → `documents/papers/[論文ID].pdf`
-
-詳細は[documents/README.md](documents/README.md)を参照してください。
 
 ## ライセンス
 

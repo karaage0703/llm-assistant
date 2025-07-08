@@ -263,3 +263,14 @@
   background-color: #6c757d;
   cursor: not-allowed;
 }
+
+/* Intermediate message display */
+.intermediate-message {
+  color: #6c757d;
+  font-style: italic;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-left: 3px solid #007bff;
+  border-radius: 0.25rem;
+  margin: 0.5rem 0;
+}
