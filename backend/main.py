@@ -144,9 +144,19 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
 
             # Process message through Claude Code CLI with session support
             session_id = message_data.get("session_id", "default")
-            result = await claude_manager.execute_command(message_data.get("message", ""), session_id)
 
-            # Send response back to client
+            # Define streaming callback
+            async def stream_callback(data):
+                """Send streaming updates to client"""
+                stream_response = {"type": "stream", "data": data}
+                await manager.send_personal_message(stream_response, client_id)
+
+            # Execute with streaming
+            result = await claude_manager.execute_command(
+                message_data.get("message", ""), session_id, stream_callback=stream_callback
+            )
+
+            # Send final response
             response = {
                 "type": "response",
                 "data": {

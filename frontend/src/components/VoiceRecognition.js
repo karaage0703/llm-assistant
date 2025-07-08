@@ -6,6 +6,7 @@ const VoiceRecognition = ({ onTranscript, onError }) => {
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
   const [error, setError] = useState('');
+  const [userActivated, setUserActivated] = useState(false);
   const recognitionRef = useRef(null);
   const finalTranscriptRef = useRef('');
   const interimTranscriptRef = useRef('');
@@ -94,6 +95,11 @@ const VoiceRecognition = ({ onTranscript, onError }) => {
       };
 
       recognitionRef.current = recognition;
+      
+      // Ensure recognition doesn't auto-start
+      if (recognition.continuous) {
+        recognition.stop();
+      }
     }
 
     return () => {
@@ -104,7 +110,7 @@ const VoiceRecognition = ({ onTranscript, onError }) => {
   }, [onTranscript, onError]);
 
   const startListening = () => {
-    if (recognitionRef.current && !isListening) {
+    if (recognitionRef.current && !isListening && userActivated) {
       try {
         // Reset transcripts
         finalTranscriptRef.current = '';
@@ -127,6 +133,11 @@ const VoiceRecognition = ({ onTranscript, onError }) => {
   };
 
   const toggleListening = () => {
+    // Mark as user-activated on first interaction
+    if (!userActivated) {
+      setUserActivated(true);
+    }
+    
     if (isListening) {
       stopListening();
     } else {
