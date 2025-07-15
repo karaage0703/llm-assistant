@@ -201,12 +201,6 @@ pytest
 │   │   ├── App.js      # メインアプリ
 │   │   └── index.js    # エントリーポイント
 │   └── package.json    # npm依存関係
-├── documents/          # ドキュメント管理ディレクトリ
-│   ├── README.md       # ドキュメント管理ガイド
-│   ├── notes/          # 日付ベースの一時的なメモ・記録
-│   ├── knowledge/      # カテゴリ別の継続的な知識・ノウハウ
-│   ├── materials/      # 資料・素材（マニュアル、テンプレート等）
-│   └── papers/         # 学術論文・研究資料（arXiv論文等）
 ├── docs/               # プロジェクト設計ドキュメント
 │   └── design.md       # プロジェクト設計書
 ├── .devcontainer/      # VS Code開発コンテナ設定
@@ -216,7 +210,6 @@ pytest
 ├── .env.example        # 環境変数テンプレート
 ├── pyproject.toml      # uv依存関係定義
 ├── run_backend.py      # バックエンド起動スクリプト
-├── CLAUDE.md          # Claude Code設定ガイド
 └── README.md          # このファイル
 ```
 
