@@ -64,22 +64,69 @@ cp .mcp.json.example .mcp.json
 
 ### 5. アプリケーションの起動
 
-#### バックエンドの起動
+#### 方法1: 個別起動
+
+##### バックエンドの起動
 ```bash
 # uvを使用して起動
 uv run run_backend.py
 ```
 
-#### フロントエンドの起動
+##### フロントエンドの起動
 ```bash
 # 別のターミナルで
 cd frontend
 npm start
 ```
 
+#### 方法2: Dockerを使用した起動（推奨）
+
+```bash
+# ビルドして起動
+docker compose up --build
+
+# バックグラウンドで起動
+docker compose up -d --build
+
+# ログの確認
+docker compose logs -f
+
+# 停止
+docker compose down
+
+# ボリュームも含めて削除
+docker compose down -v
+```
+
+**注意事項:**
+- Docker内でClaude Code CLIを使用するため、初回起動時にコンテナ内でClaude認証が必要です
+- BuildKitが有効な環境では、より高速なビルドが可能です：
+  - `DOCKER_BUILDKIT=1`環境変数を設定することで、並列ビルドやキャッシュマウントなどの高度な機能が利用可能
+  - 例: `DOCKER_BUILDKIT=1 docker compose build`
+  - BuildKitはDockerfile内の`RUN --mount`構文をサポートし、ネットワークエラー時の信頼性を向上させます
+
+**Docker環境でのClaude認証手順:**
+```bash
+# 1. コンテナIDを取得
+docker ps
+
+# 2. バックエンドコンテナに入る（container_idは上記で確認したllm-assistant-backendのID）
+docker exec -it <container_id> bash
+
+# 3. コンテナ内でClaude認証を実行
+claude
+
+# 4. 表示されるURLをコピーして、ホストマシンのブラウザでアクセス
+# 5. Claude Max/Pro契約でログイン・認証
+# 6. 認証完了後、Ctrl+Cでコンテナから抜ける
+# 7. Webアプリケーションが正常に動作するようになります
+```
+
 ### 6. アクセス
 
-- フロントエンド: http://localhost:3000
+- フロントエンド: 
+  - 個別起動: http://localhost:3000
+  - Docker起動: http://localhost:8080
 - バックエンドAPI: http://localhost:8000
 - API ドキュメント: http://localhost:8000/docs
 
