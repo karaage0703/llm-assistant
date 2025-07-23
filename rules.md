@@ -1,4 +1,4 @@
-# Cline Rules
+# Rules
 
 ## ロール定義
 

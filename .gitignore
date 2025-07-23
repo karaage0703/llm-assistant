@@ -244,3 +244,5 @@ logs/
 *.pid.lock
 .claude/settings.local.json
 .mcp.json
+
+.obsidian
